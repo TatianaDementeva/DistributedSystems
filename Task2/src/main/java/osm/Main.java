@@ -4,7 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
+
 import org.apache.commons.cli.*;
 
 import javax.xml.bind.JAXBException;
@@ -41,13 +45,22 @@ public class Main {
             LOG.info("Start decompress file");
             try (InputStream inputStream = new BZip2CompressorInputStream(new FileInputStream(cmd.getOptionValue("file")))) {
                 LOG.info("Finish decompress file");
-                DbUtils.init();
+                Connection connection = DbUtils.init();
                 LOG.info("Init Database");
                 NodeDao nodeDao = new NodeDaoImpl();
                 TagDao tagDao = new TagDaoImpl();
                 NodeService nodeService = new NodeService(nodeDao, tagDao);
                 OSM osm = new OSM(nodeService, 0);
+                Instant start = null;
+                Instant finish = null;
+                start = Instant.now();
                 osm.process(inputStream);
+                DbUtils.commitAndCloseStatement();
+                finish = Instant.now();
+
+                long elapsed = Duration.between(start, finish).toMillis();
+                System.out.println("Прошло времени, мс: " + elapsed);
+                System.out.println("Прошло времени, с: " + elapsed/1000);
             } catch (FileNotFoundException e) {
                 LOG.error("File not found", e);
             } catch (IOException e) {

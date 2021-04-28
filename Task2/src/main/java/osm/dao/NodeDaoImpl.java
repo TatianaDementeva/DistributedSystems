@@ -9,7 +9,7 @@ import java.util.List;
 
 import osm.model.NodeDb;
 
-import static osm.DbUtils.getConnection;
+import static osm.DbUtils.*;
 
 public class NodeDaoImpl implements NodeDao {
 
@@ -36,9 +36,9 @@ public class NodeDaoImpl implements NodeDao {
 
     @Override
     public void insertNode(NodeDb node) throws SQLException {
-        Connection connection = getConnection();
-        Statement statement = connection.createStatement();
-
+//        Connection connection = getConnection();
+//        Statement statement = connection.createStatement();
+        Statement statement = getStatement();
         String sql = "insert into nodes(id, username, longitude, latitude) " +
                 "values (" + node.getId() + ", " + "'" + node.getUser() + "'" + ", " + node.getLongitude() +
                 ", " + node.getLatitude() + ")";
@@ -47,16 +47,18 @@ public class NodeDaoImpl implements NodeDao {
 
     @Override
     public void insertPreparedNode(NodeDb node) throws SQLException {
-        Connection connection = getConnection();
-        PreparedStatement statement = connection.prepareStatement(SqlConstants.SQL_INSERT);
+//        Connection connection = getConnection();
+//        PreparedStatement statement = connection.prepareStatement(SqlConstants.SQL_INSERT);
+        PreparedStatement statement = getPrepareStatement();
         prepareStatement(statement, node);
         statement.execute();
     }
 
     @Override
     public void batchInsertNodes(List<NodeDb> nodes) throws SQLException {
-        Connection connection = getConnection();
-        PreparedStatement statement = connection.prepareStatement(SqlConstants.SQL_INSERT);
+//        Connection connection = getConnection();
+//        PreparedStatement statement = connection.prepareStatement(SqlConstants.SQL_INSERT);
+        PreparedStatement statement = getPrepareStatement();
         for (NodeDb node : nodes) {
             prepareStatement(statement, node);
             statement.addBatch();

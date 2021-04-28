@@ -1,14 +1,13 @@
 package osm;
 
+import osm.dao.NodeDaoImpl;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Objects;
 
 public class DbUtils {
@@ -19,16 +18,22 @@ public class DbUtils {
     public static final String DATABASE_PASSWORD = "postgres";
 
     private static Connection connection;
+    private static Statement statement;
+    private static PreparedStatement preparedStatement;
 
-    public static void init() throws IOException, SQLException {
+    public static Connection init() throws IOException, SQLException {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         File file = new File(Objects.requireNonNull(classLoader.getResource(INIT_SQL_PATH)).getFile());
         try (Reader reader = new BufferedReader(new FileReader(file))) {
             int count = reader.read(SQL);
             connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
-            Statement statement = connection.createStatement();
+//
+            statement = connection.createStatement();
             String sql = new String(SQL, 0, count);
             statement.execute(sql);
+            connection.setAutoCommit(false);
+            preparedStatement = connection.prepareStatement(SqlConstants.SQL_INSERT);
+            return connection;
         }
     }
 
@@ -41,8 +46,32 @@ public class DbUtils {
             connection.close();
         }
     }
+    public static Statement getStatement() {
+        return statement;
+    }
+
+    public static PreparedStatement getPrepareStatement() {
+        return preparedStatement;
+    }
 
     private DbUtils() {
         throw new UnsupportedOperationException();
+    }
+
+    public static void commitAndCloseStatement() throws SQLException {
+        connection.commit();
+        statement.close();
+        preparedStatement.close();
+    }
+    private static class SqlConstants {
+        private static final String SQL_GET = "" +
+                "select id, username, longitude, latitude " +
+                "from nodes " +
+                "where id = ?";
+
+        private static final String SQL_INSERT = "" +
+                "insert into nodes(id, username, longitude, latitude) " +
+                "values (?, ?, ?, ?)";
+
     }
 }

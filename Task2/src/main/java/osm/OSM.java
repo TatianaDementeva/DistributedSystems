@@ -31,11 +31,11 @@ public class OSM {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         XMLStreamReader reader = null;
         JAXBContext jaxbContext = JAXBContext.newInstance(Node.class);
-        Instant start = null;
-        Instant finish = null;
+//        Instant start = null;
+//        Instant finish = null;
         try {
             reader = factory.createXMLStreamReader(inputStream);
-            start = Instant.now();
+//            start = Instant.now();
             while (reader.hasNext() && nodeCount < 20000) {
                 int event = reader.next();
                 if (XMLStreamConstants.START_ELEMENT == event && NODE.equals(reader.getLocalName())) {
@@ -43,14 +43,14 @@ public class OSM {
                 }
             }
             nodeService.flush();
-            finish = Instant.now();
+//            finish = Instant.now();
         } finally {
             assert reader != null;
             reader.close();
 
-            long elapsed = Duration.between(start, finish).toMillis();
-            System.out.println("Прошло времени, мс: " + elapsed);
-            System.out.println("Прошло времени, с: " + elapsed/1000);
+//            long elapsed = Duration.between(start, finish).toMillis();
+//            System.out.println("Прошло времени, мс: " + elapsed);
+//            System.out.println("Прошло времени, с: " + elapsed/1000);
         }
         LOG.info("OSM processing finish");
     }
